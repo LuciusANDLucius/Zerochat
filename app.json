@@ -43,6 +43,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "./plugins/withAndroidCompileSdkVersion.js",
       [
         "react-native-ble-plx",
         {
@@ -65,6 +66,12 @@
     ],
     "experiments": {
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "63052778-d9ae-4460-8cd7-49fc6a6417ce"
+      }
+    },
+    "owner": "luciusandlucius"
   }
 }

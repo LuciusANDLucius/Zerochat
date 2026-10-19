@@ -42,6 +42,7 @@
   },
   "private": true,
   "devDependencies": {
-    "log-symbols": "^7.0.1"
+    "log-symbols": "^7.0.1",
+    "patch-package": "^8.0.1"
   }
 }

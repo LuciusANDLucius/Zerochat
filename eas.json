@@ -17,7 +17,6 @@
       }
     },
     "production": {
-      "autoSubmit": true,
       "android": {
         "buildType": "app-bundle"
       },
