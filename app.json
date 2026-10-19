@@ -43,7 +43,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "./plugins/withAndroidCompileSdkVersion.js",
       [
         "react-native-ble-plx",
         {

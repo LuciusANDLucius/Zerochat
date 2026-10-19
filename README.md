@@ -127,11 +127,11 @@ Do ứng dụng can thiệp trực tiếp vào chip Bluetooth phần cứng thô
 
 ---
 
-### ⚙️ Cơ Chế Tự Động Vá Lỗi SDK (`plugins/withAndroidCompileSdkVersion.js`)
+### ⚙️ Cơ Chế Tự Động Vá Lỗi SDK (`scripts/patch-ble-advertiser.js`)
 
-Thư viện native `react-native-ble-advertiser` ban đầu bị giới hạn ở `compileSdkVersion 28` và thiếu trường `namespace`. Dự án đã tích hợp sẵn một **Expo Config Plugin** tự động can thiệp vào tiến trình `prebuild`:
-* Tự động nâng `compileSdkVersion` lên **34** cho toàn bộ module con.
-* Tự động bổ sung `namespace = "com.vitorpamplona.bleavertiser"` phù hợp chuẩn AGP 8+.
+Thư viện native `react-native-ble-advertiser` ban đầu bị giới hạn ở `compileSdkVersion 28` và thiếu trường `namespace`. Dự án đã tích hợp sẵn script tự động chạy ngay sau khi cài đặt (`postinstall` trong `package.json`):
+* Tự động nâng `compileSdkVersion` lên **34** (Android 14) tương thích hoàn toàn với Gradle 9.4+ và Java 17+.
+* Tự động bổ sung `namespace = "com.vitorpamplona.bleavertiser"` phù hợp chuẩn Android Gradle Plugin 8+.
 * Mở khóa các cờ quyền `BLUETOOTH_ADVERTISE` và `BLUETOOTH_SCAN` trên Android 12+.
 
 ---
