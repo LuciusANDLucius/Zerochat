@@ -39,6 +39,7 @@
     "android:apk": "npx expo prebuild --platform android && cd android && gradlew assembleDebug",
     "ios:testflight": "eas build --platform ios --profile production --auto-submit",
     "postinstall": "node ./scripts/patch-ble-advertiser.js",
+    "eas-build-post-install": "node ./scripts/patch-ble-advertiser.js",
     "lint": "expo lint"
   },
   "private": true,
