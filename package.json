@@ -1,0 +1,47 @@
+{
+  "name": "zerochat",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "@expo/ui": "~58.0.21",
+    "buffer": "^6.0.3",
+    "expo": "~58.0.16",
+    "expo-constants": "~58.0.12",
+    "expo-device": "~58.0.5",
+    "expo-font": "~58.0.9",
+    "expo-glass-effect": "~58.0.4",
+    "expo-image": "~58.0.16",
+    "expo-linking": "~58.0.13",
+    "expo-router": "~58.0.24",
+    "expo-splash-screen": "~58.0.10",
+    "expo-status-bar": "~58.0.3",
+    "expo-symbols": "~58.0.4",
+    "expo-system-ui": "~58.0.6",
+    "expo-web-browser": "~58.0.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-ble-advertiser": "^0.0.17",
+    "react-native-ble-plx": "^3.5.1",
+    "react-native-gesture-handler": "~3.3.0",
+    "react-native-reanimated": "4.7.1",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-screens": "~4.30.0",
+    "react-native-web": "~0.21.4",
+    "react-native-worklets": "0.13.0"
+  },
+  "scripts": {
+    "start": "expo start",
+    "reset-project": "node ./scripts/reset-project.js",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "android:apk": "npx expo prebuild --platform android && cd android && gradlew assembleDebug",
+    "ios:testflight": "eas build --platform ios --profile production --auto-submit",
+    "lint": "expo lint"
+  },
+  "private": true,
+  "devDependencies": {
+    "log-symbols": "^7.0.1"
+  }
+}
