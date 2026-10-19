@@ -108,48 +108,110 @@ npx expo start
 
 ---
 
-## 🔨 6. Hướng Dẫn Build Native
+## 🔨 6. Yêu Cầu Môi Trường & Hướng Dẫn Build Native
 
-Do ứng dụng can thiệp trực tiếp vào chip Bluetooth phần cứng thông qua `react-native-ble-plx` và `react-native-ble-advertiser`, **ứng dụng bắt buộc phải chạy bản Native Build (không dùng Expo Go tiêu chuẩn)**.
-
-### Cách 1: Build Android APK qua Expo Cloud (EAS Build — Khuyên dùng)
-*Không cần cài đặt JDK hay Android Studio trên máy tính cá nhân:*
-
-1. Đăng nhập tài khoản Expo (miễn phí):
-   ```bash
-   npx eas-cli login
-   ```
-2. Chạy lệnh build file APK:
-   ```bash
-   npx eas-cli build --platform android --profile preview
-   ```
-3. Sau 3–5 phút, quét mã QR hoặc tải file `.apk` cài trực tiếp vào điện thoại Android.
+Do ứng dụng can thiệp trực tiếp vào chip Bluetooth phần cứng thông qua `react-native-ble-plx` và `react-native-ble-advertiser` (yêu cầu quyền phát sóng ngầm và Extended Advertising PDU), **ứng dụng bắt buộc phải build Native và không thể chạy bằng Expo Go tiêu chuẩn**.
 
 ---
 
-### Cách 2: Build Android APK nội bộ trên máy tính (Local Gradle)
-*Yêu cầu đã cài **JDK 17** và **Android Studio (Android SDK 34/35)**:*
+### 📋 Ma Trận Yêu Cầu Cấu Hình (Build Environment Matrix)
+
+| Thành phần | Phiên bản yêu cầu | Mục đích kỹ thuật |
+| :--- | :---: | :--- |
+| **Android compileSdkVersion** | **34** (Android 14) | Bắt buộc để mở khóa API Bluetooth 5.0 Extended Advertising và quyền runtime Android 12+. |
+| **Android targetSdkVersion** | **34** | Đáp ứng tiêu chuẩn bảo mật và quản lý tiến trình ngầm của Google. |
+| **Android minSdkVersion** | **24** (Android 7.0+) | Đảm bảo phần cứng hỗ trợ đầy đủ BLE Advertising Peripheral Mode. |
+| **Java Development Kit (JDK)** | **JDK 17** | Yêu cầu bắt buộc bởi Gradle 9.4+ (lưu ý cần bản JDK đầy đủ có `javac`, không dùng JRE). |
+| **Android Gradle Plugin (AGP)** | **8.x+ / 9.x** | Quản lý module và tự động gán `namespace` cho các thư viện native. |
+| **iOS Deployment Target** | **13.4+** | Hỗ trợ đầy đủ CoreBluetooth Central và Peripheral background modes. |
+
+---
+
+### ⚙️ Cơ Chế Tự Động Vá Lỗi SDK (`plugins/withAndroidCompileSdkVersion.js`)
+
+Thư viện native `react-native-ble-advertiser` ban đầu bị giới hạn ở `compileSdkVersion 28` và thiếu trường `namespace`. Dự án đã tích hợp sẵn một **Expo Config Plugin** tự động can thiệp vào tiến trình `prebuild`:
+* Tự động nâng `compileSdkVersion` lên **34** cho toàn bộ module con.
+* Tự động bổ sung `namespace = "com.vitorpamplona.bleavertiser"` phù hợp chuẩn AGP 8+.
+* Mở khóa các cờ quyền `BLUETOOTH_ADVERTISE` và `BLUETOOTH_SCAN` trên Android 12+.
+
+---
+
+### ☁️ Cách 1: Build Android APK qua EAS Cloud (Khuyên dùng — Không cần cài JDK/Android Studio)
+
+Dự án đã được cấu hình và liên kết sẵn với tài khoản EAS:
+* **Tài khoản:** `@luciusandlucius`
+* **Project ID:** `63052778-d9ae-4460-8cd7-49fc6a6417ce`
+* **Hồ sơ build:** `preview` (cấu hình `"buildType": "apk"` trong [eas.json](file:///h:/Zerochat/eas.json) để xuất file APK cài trực tiếp không cần Google Play Store).
+
+#### Các bước thực hiện:
+1. Đăng nhập vào tài khoản Expo:
+   ```bash
+   npx eas-cli login
+   ```
+2. Chạy lệnh build file APK trên đám mây:
+   ```bash
+   npx eas-cli build --platform android --profile preview
+   ```
+   *(Nếu hệ thống hỏi tạo Keystore tự động, nhấn **Enter / Yes** để EAS quản lý chứng chỉ ký)*.
+3. Sau 3–5 phút, EAS sẽ trả về link tải trực tiếp file `.apk` và mã QR để quét cài vào điện thoại.
+
+---
+
+### 💻 Cách 2: Build Android APK Nội Bộ (Local Build)
+
+Dành cho môi trường đã cài đặt đầy đủ công cụ lập trình Android trên máy:
+
+#### Yêu cầu chuẩn bị:
+1. Cài đặt **Eclipse Temurin JDK 17** (hoặc OpenJDK 17) và đảm bảo biến môi trường `JAVA_HOME` trỏ tới thư mục JDK (ví dụ: `C:\Program Files\Eclipse Adoptium\jdk-17...`).
+2. Cài đặt **Android Studio**, mở SDK Manager và cài đặt **Android SDK Platform 34** và **Android SDK Build-Tools 34.0.0**.
+3. Thiết lập biến môi trường `ANDROID_HOME = C:\Users\<User>\AppData\Local\Android\Sdk`.
+
+#### Lệnh thực hiện:
 ```bash
-npm run android:apk
-# File APK hoàn thành tại: android/app/build/outputs/apk/debug/app-debug.apk
+# 1. Sinh thư mục native Android kèm plugin tự động vá:
+npx expo prebuild --platform android --clean
+
+# 2. Biên dịch APK (Cú pháp PowerShell trên Windows):
+Set-Location android; .\gradlew.bat assembleDebug
+
+# File APK tạo ra tại:
+# android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ---
 
-### Cách 3: Chạy trên iOS (iPhone)
-* **Nếu có máy Mac:**
-  ```bash
-  npx expo prebuild --platform ios
-  ```
-  Mở thư mục `ios/Zerochat.xcworkspace` bằng Xcode, cắm cáp iPhone và bấm **Run (▶)** (dùng Apple ID cá nhân miễn phí để sign).
-* **Nếu dùng Windows (Cloud TestFlight):**
-  Yêu cầu tài khoản Apple Developer ($99/năm):
-  ```bash
-  npx eas-cli build --platform ios --profile production
-  ```
+### 🍏 Cách 3: Build & Chạy trên iOS (iPhone)
+
+1. **Nếu có máy Mac (Miễn phí 100%):**
+   ```bash
+   npx expo prebuild --platform ios
+   ```
+   - Mở file `ios/Zerochat.xcworkspace` bằng Xcode.
+   - Tại tab *Signing & Capabilities*, đăng nhập tài khoản Apple ID cá nhân (Personal Team).
+   - Cắm cáp iPhone và bấm **Run (▶)** để nạp ứng dụng vào điện thoại.
+2. **Nếu dùng Windows (Cloud TestFlight qua EAS):**
+   Yêu cầu tài khoản Apple Developer ($99/năm):
+   ```bash
+   npx eas-cli build --platform ios --profile production
+   ```
+
+---
+
+### 🔒 Danh Sách Quyền Bluetooth Được Cấu Hình (`app.json`)
+
+* **Android (API 31+):**
+  - `android.permission.BLUETOOTH_ADVERTISE`: Quyền phát sóng gói tin nhị phân.
+  - `android.permission.BLUETOOTH_SCAN`: Quyền quét tìm các gói tin Mesh xung quanh.
+  - `android.permission.BLUETOOTH_CONNECT`: Quyền tương tác với adapter Bluetooth.
+  - `android.permission.ACCESS_FINE_LOCATION`: Bắt buộc để quét sóng BLE trên các phiên bản Android cũ.
+* **iOS (CoreBluetooth):**
+  - `NSBluetoothAlwaysUsageDescription`: Thông báo lý do ứng dụng cần Bluetooth khi chạy.
+  - `NSBluetoothPeripheralUsageDescription`: Quyền phát tín hiệu chuyển tiếp gói tin Mesh.
+  - `UIBackgroundModes: ["bluetooth-central", "bluetooth-peripheral"]`: Duy trì radar quét và tiếp sóng tự động khi máy ở chế độ khóa màn hình.
 
 ---
 
 ## 📄 Bản Quyền & Giấy Phép
-Dự án được phát triển phục vụ mục đích nghiên cứu, học tập và ứng dụng thực tế trong mạng thông tin cứu hộ khẩn cấp không phụ thuộc hạ tầng mạng viễn thông.
+Dự án được phát triển phục vụ mục đích nghiên cứu, học tập và ứng dụng thực tế trong mạng thông tin cứu hộ khẩn cấp không phụ thuộc hạ tầng mạng viễn thông.  
 Giấy phép: **MIT License**.
+
